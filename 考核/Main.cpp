@@ -29,7 +29,7 @@ using namespace cv;
 const int kThreashold = 180;
 const int kMaxVal = 255;
 const Size kGaussianBlueSize = Size(5, 5);
-const bool color=false;//用于选择判断装甲板的颜色 flase红色   true蓝色
+const bool color=true;//用于选择判断装甲板的颜色 flase红色   true蓝色
 
 int main()
 {
@@ -38,15 +38,24 @@ int main()
     //2.蓝色装甲板有时候识别不出轮廓？
 
     VideoCapture video;
-    video.open("./images/zjbr.mp4");
+    String s;
+    int t;
+    if (color == true) {
+        s = "./images/zjbb.mp4";
+        t = 0;
+    }
+    else {
+        s = "./images/zjbr.mp4";
+        t = 2;
+    }
+
+    video.open(s);
     Mat frame;
     Mat channels[3], binary, Gaussian;
     vector<vector<Point>> contours;
     vector<Vec4i> hierarchy;
 
     Rect boundRect;//存储最小外接矩形
-    //RotatedRect box;
-    //vector<Point2f> boxPts;
     while (true)
     {
         Rect point_array[50];//存储合格的外接矩阵
@@ -54,12 +63,13 @@ int main()
             break;
         }
         split(frame, channels);
-        if (color == true) {
-            threshold(channels[0], binary, kThreashold, kMaxVal, 0);//对b进行二值化
-        }
-        else {
-            threshold(channels[2], binary, kThreashold, kMaxVal, 0);//对r进行二值化
-        }
+        //if (color == true) {
+        //    threshold(channels[0], binary, kThreashold, kMaxVal, 0);//对b进行二值化
+        //}
+        //else {
+        //    threshold(channels[2], binary, kThreashold, kMaxVal, 0);//对r进行二值化
+        //}
+        threshold(channels[t], binary, kThreashold, kMaxVal, 0);//对r进行二值化
 
         GaussianBlur(binary, Gaussian, kGaussianBlueSize, 0);
         Mat k = getStructuringElement(1, Size(3, 3));
