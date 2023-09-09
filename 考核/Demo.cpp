@@ -280,7 +280,7 @@ void App::Q1() {
 	waitKey(0);
 }
 
-/******************************************去雾相关函数***********************************************/
+/***********************去雾相关函数***********************/
 //导向滤波，用来优化t(x)，针对单通道
 Mat guidedfilter(Mat& srcImage, Mat& srcClone, int r, double eps)
 {
@@ -290,31 +290,35 @@ Mat guidedfilter(Mat& srcImage, Mat& srcClone, int r, double eps)
 	int nRows = srcImage.rows;
 	int nCols = srcImage.cols;
 	Mat boxResult;
-	//步骤一：计算均值
-	boxFilter(Mat::ones(nRows, nCols, srcImage.type()),
-		boxResult, CV_32FC1, Size(r, r));
+	//步骤一：计算均值 //应用盒滤波器计算相关的值
+	boxFilter(Mat::ones(nRows, nCols, srcImage.type()),boxResult, CV_32FC1, Size(r, r));
+
 	//生成导向均值mean_I
 	Mat mean_I;
 	boxFilter(srcImage, mean_I, CV_32FC1, Size(r, r));
+
 	//生成原始均值mean_p
 	Mat mean_p;
 	boxFilter(srcClone, mean_p, CV_32FC1, Size(r, r));
+
 	//生成互相关均值mean_Ip
 	Mat mean_Ip;
-	boxFilter(srcImage.mul(srcClone), mean_Ip,
-		CV_32FC1, Size(r, r));
-	Mat cov_Ip = mean_Ip - mean_I.mul(mean_p);
+	boxFilter(srcImage.mul(srcClone), mean_Ip,CV_32FC1, Size(r, r));
+
 	//生成自相关均值mean_II
 	Mat mean_II;
-	//应用盒滤波器计算相关的值
-	boxFilter(srcImage.mul(srcImage), mean_II,
-		CV_32FC1, Size(r, r));
+	boxFilter(srcImage.mul(srcImage), mean_II,CV_32FC1, Size(r, r));
+
+	Mat cov_Ip = mean_Ip - mean_I.mul(mean_p);
+
 	//步骤二：计算相关系数
 	Mat var_I = mean_II - mean_I.mul(mean_I);
 	Mat var_Ip = mean_Ip - mean_I.mul(mean_p);
+
 	//步骤三：计算参数系数a,b
 	Mat a = cov_Ip / (var_I + eps);
 	Mat b = mean_p - a.mul(mean_I);
+
 	//步骤四：计算系数a\b的均值
 	Mat mean_a;
 	boxFilter(a, mean_a, CV_32FC1, Size(r, r));
@@ -322,6 +326,7 @@ Mat guidedfilter(Mat& srcImage, Mat& srcClone, int r, double eps)
 	Mat mean_b;
 	boxFilter(b, mean_b, CV_32FC1, Size(r, r));
 	mean_b = mean_b / boxResult;
+
 	//步骤五：生成输出矩阵
 	Mat resultMat = mean_a.mul(srcImage) + mean_b;
 	return resultMat;
@@ -507,4 +512,159 @@ void App::Q2() {//去雾
 	waitKey(0);
 }
 
+void App::Q3() {
+	//思路：使用undistort可以对畸变进行矫正，需要知道cameraMatrix，和distCoeffs  
+	//使用calibrateCamera可以求取内参和畸变矩阵，需要知道真实世界的点objectPoints，标定板角点imgsPoints，标定图像的大小imageSize
+	//使用findChessboardCorners可以检测标定板角点， objectPoints应该如何测量？
 
+	//用本机拍取的标定板照片求取的是本机的内参和畸变矩阵，对考核任务发布的图片是否能够有效矫正？
+	//Mat img = imread("./images/ji.png");
+	//Mat dst;
+	//Mat cameraMatrix, distCoeffs;//内参和畸变
+	//undistort(img, dst, cameraMatrix, distCoeffs);   //pass
+
+	//
+
+}
+
+void Game::Q1() {
+	Mat img = imread("./images/zjb.png");
+	Mat gray,binary;
+	cvtColor(img, gray, COLOR_BGR2GRAY);
+	//Mat k = getStructuringElement(1, Size(3, 3));
+	//morphologyEx(gray, gray, 2, k,Point(-1,-1),3);//将一些细小边缘腐蚀
+
+	GaussianBlur(gray, gray, Size(5, 5), 0, 0);
+	threshold(gray, binary, 50, 255, THRESH_BINARY); 
+
+	vector<vector<Point>> contours;//轮廓 存储检测到的轮廓的向量容器 存储检测到的轮廓的向量容器
+	vector<Vec4i> hierarchy;//存储轮廓的层次结构信息
+	findContours(binary, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point());
+
+
+	//轮廓绘制
+	for (int t = 0; t < contours.size(); t++) {
+		drawContours(img, contours, t, Scalar(0, 0, 255), 2, 8);//t：指定要绘制的轮廓的索引 设置-1 绘制所有轮廓
+		imshow("111", img);
+		//waitKey(0);
+	}
+
+	waitKey(0);
+}
+
+
+
+
+//#include "stdio.h"
+//#include<iostream> 
+//#include <opencv2/opencv.hpp>
+//#include <opencv2/core/core.hpp>
+//#include <opencv2/highgui/highgui.hpp>
+//using namespace std;
+//using namespace cv;
+//
+//const int kThreashold = 180;
+//const int kMaxVal = 255;
+//const Size kGaussianBlueSize = Size(5, 5);
+//const int color = 2;//用于选择判断装甲板的颜色 0红色   2蓝色
+//
+//int main()
+//{
+//	//存在问题：
+//	//1.装甲板在边缘，只能识别到一个光条
+//	//2.蓝色装甲板有时候识别不出轮廓？
+//
+//	VideoCapture video;
+//	video.open("./images/zjbb.mp4");
+//	Mat frame;
+//	Mat channels[3], binary, Gaussian;
+//	vector<vector<Point>> contours;
+//	vector<Vec4i> hierarchy;
+//
+//	Rect boundRect;//存储最小外接矩形
+//	while (true)
+//	{
+//		Rect point_array[50];//存储合格的外接矩阵
+//		if (!video.read(frame)) {
+//			break;
+//		}
+//		split(frame, channels);
+//
+//		threshold(channels[2], binary, kThreashold, kMaxVal, 0);//对r/b进行二值化
+//
+//		GaussianBlur(binary, Gaussian, kGaussianBlueSize, 0);
+//		Mat k = getStructuringElement(1, Size(3, 3));
+//		findContours(Gaussian, contours, hierarchy, RETR_TREE, CHAIN_APPROX_NONE);//查找轮廓
+//
+//		int index = 0;
+//		for (int i = 0; i < contours.size(); i++) {
+//			//box = minAreaRect(Mat(contours[i]));//计算旋转矩阵
+//			//box.points(boxPts.data());
+//			boundRect = boundingRect(Mat(contours[i]));//计算最小外接矩形
+//			rectangle(frame, boundRect.tl(), boundRect.br(), (255, 255, 255), 2, 8, 0);//左上 右下
+//			try
+//			{
+//				if (double(boundRect.height / boundRect.width) >= 2 && boundRect.height > 36 && boundRect.height > 20) {//满足条件的矩阵保存在point_array
+//					point_array[index] = boundRect;
+//					index++;
+//				}
+//			}
+//			catch (const char* msg)
+//			{
+//				cout << printf(msg) << endl;
+//				continue;
+//			}
+//		}
+//
+//		if (index < 2) {//没检测到合格的轮廓 直接 下一帧
+//			imshow("video", frame);
+//			cv::waitKey(10);
+//			continue;
+//		}
+//
+//		int point_near[2];
+//		int min = 10000;
+//		for (int i = 0; i < index - 1; i++)//找到面积之差最小的的两个轮廓的索引 
+//		{
+//			for (int j = i + 1; j < index; j++) {
+//				int value = abs(point_array[i].area() - point_array[j].area());
+//				if (value < min)
+//				{
+//					min = value;
+//					point_near[0] = i;
+//					point_near[1] = j;
+//				}
+//			}
+//		}
+//
+//		try
+//		{
+//			Rect rectangle_1 = point_array[point_near[0]];//找到这两个相似的轮廓
+//			Rect rectangle_2 = point_array[point_near[1]];
+//
+//			if (rectangle_2.x == 0 || rectangle_1.x == 0) {
+//				throw "not enough points";
+//			}
+//
+//			Point point1 = Point(rectangle_1.x + rectangle_1.width / 2, rectangle_1.y);
+//			Point point2 = Point(rectangle_1.x + rectangle_1.width / 2, rectangle_1.y + rectangle_1.height);
+//			Point point3 = Point(rectangle_2.x + rectangle_2.width / 2, rectangle_2.y);
+//			Point point4 = Point(rectangle_2.x + rectangle_2.width / 2, rectangle_2.y + rectangle_2.height);
+//			Point p[4] = { point1,point2,point4,point3 };
+//
+//			cout << p[0] << p[1] << p[2] << p[3] << endl;
+//			for (int i = 0; i < 4; i++) {
+//				line(frame, p[i % 4], p[(i + 1) % 4], Scalar(255, 255, 255), 2);
+//			}
+//		}
+//		catch (const char* msg)
+//		{
+//			cout << msg << endl;
+//		}
+//
+//		imshow("video", frame);
+//		cv::waitKey(20);
+//	}
+//	cv::destroyAllWindows();
+//	return 0;
+//}
