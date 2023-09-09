@@ -29,22 +29,24 @@ using namespace cv;
 const int kThreashold = 180;
 const int kMaxVal = 255;
 const Size kGaussianBlueSize = Size(5, 5);
-const bool color=2;//用于选择判断装甲板的颜色 0红色   2蓝色
+const bool color=false;//用于选择判断装甲板的颜色 flase红色   true蓝色
 
 int main()
 {
     //存在问题：
-    //1.装甲板在边缘，只能识别到一个光条
+    //1.装甲板在边缘的时候，追踪对断开
     //2.蓝色装甲板有时候识别不出轮廓？
 
     VideoCapture video;
-    video.open("./images/zjbb.mp4");
+    video.open("./images/zjbr.mp4");
     Mat frame;
     Mat channels[3], binary, Gaussian;
     vector<vector<Point>> contours;
     vector<Vec4i> hierarchy;
 
     Rect boundRect;//存储最小外接矩形
+    //RotatedRect box;
+    //vector<Point2f> boxPts;
     while (true)
     {
         Rect point_array[50];//存储合格的外接矩阵
