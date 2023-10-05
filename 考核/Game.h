@@ -9,7 +9,8 @@ public:
 	//第二题 
 	void Q2r();//红色能量机关识别
 	void Q2b();//蓝色能量机关识别
-	void Q2();//用于测试
+	void test1();//用于测试
+	void test2();//用于测试
 
-	void Dog();
+	void Dog();//理解bar
 };

@@ -16,7 +16,6 @@ void App::Q1() {
 	//Ò»£ºÆ»¹ûÊÇºìÉ« ¶ÔrÍ¨µÀÉèÖÃãĞÖµ×öÒ»¸öÉ¸Ñ¡  ¶ÔÉ¸Ñ¡µÄ½á¹û½øĞĞÑ°ÕÒÂÖÀª ÔÚÔ­Í¼ÖĞ»æÖÆÂÖÀª£¨Ğ§¹ûÒ»°ã Ô­Òò£º1.Æ»¹ûÉÏÓĞÒõÓ° 2.Æ»¹ûµÄµ×²¿É«²Ê²»¹»ÏÊÑŞ 3.Ìì¿ÕÇøÓòµÄrÍ¨µÀÊıÖµ±È½Ï´ó£©
 
 	//¶ş£º×ªµ½hsv¶ÔºìÉ«½øĞĞ¿ÙÍ¼  Ïà½ÏÓÚÉÏÒ»¸ö·½·¨ ¿ÉÒÔÖ±½ÓÅÅ³ıÌì¿ÕµÄ¸ÉÈÅ µ«ÊÇÆ»¹ûµ×²¿ÒÀ¾É²»ÄÜºÜºÃÊ¶±ğ
-
 	Mat image = imread("./images/apple.png");
 
 	//idea1
@@ -31,26 +30,32 @@ void App::Q1() {
 
 	Mat k = getStructuringElement(1, Size(3, 3));
 	morphologyEx(binary, binary, 2, k, Point(-1, -1), 5);//¿ªÔËËã 
-
 	morphologyEx(binary, binary, 1, k, Point(-1, -1), 30);//ÅòÕÍ
 
 	vector<vector<Point>> contours;//´æ´¢¼ì²âµ½µÄÂÖÀªµÄÏòÁ¿ÈİÆ÷  ¿ÉÄÜ»áÓĞ¶à¸ö
 	vector<Vec4i> hierarchy;//´æ´¢ÂÖÀªµÄ²ã´Î½á¹¹ĞÅÏ¢
 	findContours(binary, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point());//µÚ¶ş¸ö²ÎÊıÎª¼ì²âµ½µÄÂÖÀª 
 
-	for (int t = 0; t < contours.size(); t++) {
+	for (int t = 0; t < contours.size(); t++) {//ÀíÂÛÉÏÖ»ÓĞÒ»¸öÂÖÀª
 		Rect rect = boundingRect(contours[t]);//»ñÈ¡×î´óÍâ½Ó¾ØĞÎ
 		rectangle(image, rect, Scalar(0, 0, 255), 2, 8, 0);
 		//drawContours(image, contours, t, Scalar(255, 0,0 ), 2, 8);//t£ºÖ¸¶¨Òª»æÖÆµÄÂÖÀªµÄË÷Òı ÉèÖÃ-1 »æÖÆËùÓĞÂÖÀª
-		imshow("Ô­Í¼", image);
 	}
+	imshow("Ô­Í¼", image);
 
 	//idea2
 	//Mat hsv,out;
 	//cvtColor(image, hsv, COLOR_BGR2HSV);
 	//inRange(hsv, Scalar(156, 43, 46), Scalar(180, 255, 255), out);
 
-	waitKey(0);
+	//idea3
+	//Mat image = imread("./images/apple.png");
+
+	//vector<Mat> channels;
+	//split(image, channels);//·ÖÀë
+
+	//Mat r, binary;
+	//r = channels[2]-channels[0];
 }
 
 /***********************È¥ÎíÏà¹Øº¯Êı***********************/
@@ -209,7 +214,7 @@ int calculate_A(Mat src, Mat dark_channel_mat)//¼ÆËãA ´Ó°µÍ¨µÀÖĞÑ¡È¡×îÁÁÇøÓò ¶ÔÓ
 }
 
 //Mat calculate_tx(Mat& src, int A, Mat& dark_channel_mat)//¼ÆËãt   £¿£¿£¿
-Mat calculate_tx(int A, Mat& dark_channel_mat)//ÎíÆøÍ¼ÏñI²»ÓÃ´³Èë£¿  
+Mat calculate_tx(int A, Mat& dark_channel_mat)  
 {
 	Mat dst;
 	Mat tx;
@@ -224,7 +229,7 @@ Mat calculate_tx(int A, Mat& dark_channel_mat)//ÎíÆøÍ¼ÏñI²»ÓÃ´³Èë£¿
 	return tx;
 }
 
-//Mat calculate_tx(Mat& src, int A)//¼ÆËãt 
+//Mat calculate_tx(Mat& src, int A)//×Ô¼ºÊµÏÖ ¼ÆËãt 
 //{
 //	Mat tem = src / A;//  Ô­Í¼Ïñ/A
 //	Mat dark=dark_channel(tem);//¼ÆËã°µÍ¨µÀ
@@ -269,9 +274,9 @@ void App::Q2() {//È¥Îí
 	cvtColor(src, dst, COLOR_BGR2GRAY);
 	Mat dark_channel_mat = dark_channel(src);//¼ÆËã°µÍ¨µÀÍ¼Ïñ
 
-	int A = calculate_A(src, dark_channel_mat);//ÖªµÀI£¬°µÍ¨µÀÍ¼Ïñ ¿ÉÒÔ¼ÆËãA
+	int A = calculate_A(src, dark_channel_mat);//ÖªµÀI£¬°µÍ¨µÀÍ¼Ïñ£¬¿ÉÒÔ¼ÆËãA
 
-	Mat tx = calculate_tx(A, dark_channel_mat);//ÖªµÀI£¬°µÍ¨µÀÍ¼Ïñ£¬A¿ÉÒÔ¼ÆËãt
+	Mat tx = calculate_tx(A, dark_channel_mat);//ÖªµÀI£¬°µÍ¨µÀÍ¼Ïñ£¬A£¬¿ÉÒÔ¼ÆËãt
 	//Mat tx = calculate_tx(src, A);
 
 	Mat tx_ = guidedfilter(dst, tx, 30, 0.001);//µ¼ÏòÂË²¨ºóµÄtx£¬dstÎªÒıµ¼Í¼Ïñ  ÆğÓÅ»¯×÷ÓÃ
@@ -285,17 +290,69 @@ void App::Q2() {//È¥Îí
 	waitKey(0);
 }
 
+
+void rectxy2fisheyexy(double src_x, double src_y,//²»Ì«Àí½âÆäÔ­Àí²¿·Ö  ´ÓÒ»¸öÆ½Ãæ¾ØĞÎ×ø±êÏµµ½ÓãÑÛÍ¼Ïñ×ø±êÏµµÄ×ª»»
+	double* dst_x, double* dst_y,//Êä³ö£¨r£¬c£©Ó¦¸Ã¶ÔÓ¦µÄÊäÈëµÄÎ»ÖÃ£¨´ıÇó£©
+	double center_x, double center_y,//Ô­Ê¼Í¼ÏñµÄÖĞĞÄ
+	int image_width,//Ô­Ê¼Í¼ÏñµÄ¿í¶È
+	double R)//ÓãÑÛ°ë¾¶
+{
+	double phi;
+	double theta;
+	double D = sqrt(R * R - image_width * image_width / 4);//¼ÆËãÔ²ĞÄÓëÍ¼Ïñ±ßÔµÖ®¼äµÄ¾àÀë
+
+	src_x -= center_x;//½«Ô´×ø±ê(src_x, src_y) ´ÓÍ¼ÏñÖĞĞÄÆ«ÒÆµ½ÒÔÔ²ĞÄ(center_x, center_y) ÎªÔ­µãµÄ×ø±êÏµÖĞ¡£
+	src_y -= center_y;
+
+	phi = atan(sqrt(double(src_x * src_x + src_y * src_y)) / D);//¸ù¾İÔ´×ø±êÔÚÓãÑÛÍ¼ÏñÖĞµÄÎ»ÖÃ£¬¼ÆËã³öÇòÃæÉÏµÄ¾­¶È½Ç phi
+	theta = atan2(src_y, src_x);//¸ù¾İÔ´×ø±êÔÚÓãÑÛÍ¼ÏñÖĞµÄÎ»ÖÃ£¬¼ÆËã³öÇòÃæÉÏµÄÎ³¶È½Ç
+
+	*dst_x = R * sin(phi) * cos(theta) + center_x;//¸ù¾İ¼ÆËãµÃµ½µÄ phi ºÍ theta Öµ£¬Í¨¹ıÈı½Çº¯Êı¼ÆËã³öÄ¿±ê×ø±ê (dst_x, dst_y)
+	*dst_y = R * sin(phi) * sin(theta) + center_y;
+
+	return;
+}
+
 void App::Q3() {
-	//Ë¼Â·£ºÊ¹ÓÃundistort¿ÉÒÔ¶Ô»û±ä½øĞĞ½ÃÕı£¬ĞèÒªÖªµÀcameraMatrix£¬ºÍdistCoeffs  
+	//Ë¼Â·1£ºÊ¹ÓÃundistort¿ÉÒÔ¶Ô»û±ä½øĞĞ½ÃÕı£¬ĞèÒªÖªµÀcameraMatrix£¬ºÍdistCoeffs  
 	//Ê¹ÓÃcalibrateCamera¿ÉÒÔÇóÈ¡ÄÚ²ÎºÍ»û±ä¾ØÕó£¬ĞèÒªÖªµÀÕæÊµÊÀ½çµÄµãobjectPoints£¬±ê¶¨°å½ÇµãimgsPoints£¬±ê¶¨Í¼ÏñµÄ´óĞ¡imageSize
 	//Ê¹ÓÃfindChessboardCorners¿ÉÒÔ¼ì²â±ê¶¨°å½Çµã£¬ objectPointsÓ¦¸ÃÈçºÎ²âÁ¿£¿
-
 	//ÓÃ±¾»úÅÄÈ¡µÄ±ê¶¨°åÕÕÆ¬ÇóÈ¡µÄÊÇ±¾»úµÄÄÚ²ÎºÍ»û±ä¾ØÕó£¬¶Ô¿¼ºËÈÎÎñ·¢²¼µÄÍ¼Æ¬ÊÇ·ñÄÜ¹»ÓĞĞ§½ÃÕı£¿
 	//Mat img = imread("./images/ji.png");
 	//Mat dst;
 	//Mat cameraMatrix, distCoeffs;//ÄÚ²ÎºÍ»û±ä
-	//undistort(img, dst, cameraMatrix, distCoeffs);   //pass
+	//undistort(img, dst, cameraMatrix, distCoeffs);  no
 
-	//
+	//Ë¼Â·2£ºÊ¹ÓÃgetAffineTransform»ñÈ¡·ÂÉä±ä»»¾ØÕóÔÙÊ¹ÓÃwarpAffineÊµÏÖ¶Ô»û±äÍ¼ÏñµÄ½ÃÕı    Ô­Ê¼µãºÍÄ¿±êµãÈçºÎÈ·¶¨£¿  no
 
+	Mat input = imread("./images/ji.png");
+
+	double fisheye_radius = 300;
+	int input_width = input.cols;
+	int input_height = input.rows;
+
+	int output_width = cvRound(input_width * 1.5);
+	int output_height = cvRound(input_height * 1.5);//Êä³öÍ¼ÏñÉÔÎ¢´óÒ»µã
+	Mat output(output_height, output_width, input.type(), Scalar(0, 0, 0));
+
+	for (int r = 0; r < output.rows; r++)
+		for (int c = 0; c < output.cols; c++)//±éÀúÊä³öÍ¼ÏñÃ¿¸öÏñËØ
+		{
+			double dst_x = 0;//Êä³öÍ¼Ïñ£¨r£¬c£©Ó¦¸Ã¶ÔÓ¦µÄÔ­Ê¼Í¼ÏñµÄÎ»ÖÃ
+			double dst_y = 0;
+			double src_x = c - (output_width - input_width) / 2;//Êä³öÍ¼Ïñ£¨r£¬c£©¶ÔÓ¦Ô­Ê¼Í¼ÏñµÄÎ»ÖÃ
+			double src_y = r - (output_height - input_height) / 2;
+
+			rectxy2fisheyexy(src_x, src_y, &dst_y, &dst_x,
+				input_width / 2.0, input_height / 2.0,//ÊäÈëÖĞĞÄ
+				input_width, fisheye_radius);//ÊäÈë¿íºÍÓãÑÛ°ë¾¶
+
+			if (dst_x > 0 && dst_x < input_height - 1 && dst_y > 0 && dst_y < input_width - 1)
+				//using pointer nor at() functioin can gain better performance
+				output.at<Vec3b>(r, c) = input.at<Vec3b>(cvRound(dst_x), cvRound(dst_y));//cvRoundËÄÉáÎåÈë
+		}
+	imshow("result", output);
+	waitKey(0);
+	return;
 }
+
